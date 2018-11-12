@@ -11,9 +11,23 @@
                 </div>
                 <div class="fr" style="margin-top: 25px;margin-right:5%">
 
-                    <b-tabs  pills horizontal>
 
-                             <button class="btn btn-info" style="background-color: darkcyan;" @click="logout">Log Out</button>
+
+                    <b-tabs  pills horizontal>
+                        <!--//<div v-if="{{CurrentUser}}"></div>-->
+
+                        <!--<div v-for=" u in ">-->
+                            <!--{{u.emails[0].address}}-->
+                        <!--</div>-->
+
+                        <div v-for="email in users">
+                            {{email.emails[0].address}}
+
+
+
+
+                        <span><font-awesome-icon icon="user-secret"></font-awesome-icon></span>
+                             <button class="btn btn-info" style="background-color: darkcyan;" @click="logout">Log Out</button></div>
 
                     </b-tabs>
 
@@ -31,20 +45,36 @@
     import 'bootstrap/dist/css/bootstrap.css';
     import 'bootstrap-vue/dist/bootstrap-vue.css';
     import BootstrapVue from 'bootstrap-vue';
+    import VueMeteorTracker from 'vue-meteor-tracker';
 
+
+
+    Vue.use(VueMeteorTracker);
     Vue.use(BootstrapVue);
     export default {
         data() {
-            return {
 
-                email: '',
+            return {
+                email: [],
                 password: '',
-                errors: []
+                errors: [],
 
             }
         },
+        meteor: {
+            $subscribe: {
+                'users': []
+            },
+            users: function () {
 
+                // console.log("Userid", Meteor.userId());
+                //
+                // console.log("user", Meteor.users.findOne(Meteor.userId()));
+               return Meteor.users.find(Meteor.userId());
+            }
+        },
         methods: {
+
             logout: function() {
                 if(Meteor.userId()){
                     Meteor.logout(()=>{
@@ -57,9 +87,6 @@
 
 
             }
-
-
-
 
         }
     }
