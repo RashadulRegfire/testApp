@@ -3,11 +3,11 @@ import Vue from 'vue';
 import routerFactory from '../imports/routes/routes';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faUserSecret,faLock,faEnvelope,faAddressBook,faPhone } from '@fortawesome/free-solid-svg-icons'
+import { faUserSecret,faLock,faEnvelope,faAddressBook,faPhone,faUserCircle,faHeart,faComments,faCaretRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 
-library.add(faUserSecret,faLock,faEnvelope,faAddressBook,faPhone)
+library.add(faUserSecret,faLock,faEnvelope,faAddressBook,faPhone,faUserCircle,faHeart,faComments,faCaretRight)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
