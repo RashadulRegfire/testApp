@@ -17,7 +17,7 @@
                         <b-dropdown variant="link" size="lg" class="pointer hover-bg-transparent" right no-caret>  <span slot="text"> <font-awesome-icon icon="user-circle" ></font-awesome-icon></span>
 
                             <b-dropdown-item href="#">Signed in as
-                                <div v-for="email in users" >
+                                <div v-for="email in userData" >
                                     <strong>{{email.emails[0].address}}
                                     </strong>
                                 </div>
@@ -56,60 +56,60 @@
                             <textarea class="status" ref="content" name="status" placeholder="Write your post here!" rows="5" cols="50"></textarea>
                         </div>
                         <div class="row" style="float: right; margin-right: 31%">
-                          <!--<div class="pa2"> <button >Browse</button></div>-->
-                        <div class="pa2"> <button v-on:click="savePost">Post</button></div>
+                            <!--<div class="pa2"> <button >Browse</button></div>-->
+                            <div class="pa2"> <button v-on:click="savePost">Post</button></div>
                         </div>
 
                     </form>
                 </div>
             </div>
             <div class="row">
-            <div v-for=" post in all">
-                <div class="col-lg-4 col-md-6 ma2 pa2" style="min-width: 380px;">
-                    <b-card img-src="https://picsum.photos/400/200/?image=41"
-                            img-fluid
-                            img-alt="image"
-                            img-top>
-                        <a href="#">
-                           {{post.userEmail}}
-                        </a>
-                        <p class="card-text">
-                           {{post.status}}
-                        </p>
-                        <div slot="footer">
-                            <small class="text-muted"><div class="row"><div class="col-md-5"><b-btn  size="sm" v-on:click="incrementLike(post._id,post.Like)"><font-awesome-icon icon="heart"></font-awesome-icon> </b-btn> {{post.Like}} Like</div><div class="col-md-7"><b-btn v-b-toggle="post._id" variant="" size="sm"><font-awesome-icon icon="comments"></font-awesome-icon></b-btn> {{post.CommentCount}} Comments</div></div></small>
-                            <b-collapse v-bind:id="post._id" class="mt-2">
-                                <b-card class="ma0 pa0">
-                                    <div class="card-text form-group">
-                                        <!--<label> <div v-for="email in users" >-->
+                <div v-for=" post in posts">
+                    <div class="col-lg-4 col-md-6" style="min-width: 320px">
+                        <b-card img-src="https://picsum.photos/400/200/?image=41"
+                                img-fluid
+                                img-alt="image"
+                                img-top>
+                            <a href="#">
+                                {{post.userEmail}}
+                            </a>
+                            <p class="card-text">
+                                {{post.status}}
+                            </p>
+                            <div slot="footer">
+                                <small class="text-muted"><div class="row"><div class="col-md-5"><b-btn  size="sm" v-on:click="incrementLike(post._id,post.Like)"><font-awesome-icon icon="heart"></font-awesome-icon> </b-btn> {{post.Like}} Like</div><div class="col-md-7"><b-btn v-b-toggle="post._id" variant="" size="sm"><font-awesome-icon icon="comments"></font-awesome-icon></b-btn> {{post.CommentCount}} Comments</div></div></small>
+                                <b-collapse v-bind:id="post._id" class="mt-2">
+                                    <b-card class="ma0 pa0">
+                                        <div class="card-text form-group">
+                                            <!--<label> <div v-for="email in users" >-->
                                             <!--<strong><a href="#">{{email.emails[0].address}}</a>-->
                                             <!--</strong>-->
-                                        <!--</div></label>-->
-                                        <div class="row">
-                                            <div v-for="email in users" style="padding-right: 4em">
-                                                <strong><a href="#">{{email.emails[0].address}}</a>
-                                                </strong>
-                                            </div>
-                                            <div v-for="comments in post.Comment">
-                                                <div v-for=" lists in comments">
-                                                    <a href="#"> {{lists.userEmail}}</a> : {{lists.Comments}}
+                                            <!--</div></label>-->
+                                            <div class="row">
+                                                <div v-for="email in userData" style="padding-right: 4em">
+                                                    <strong><a href="#">{{email.emails[0].address}}</a>
+                                                    </strong>
                                                 </div>
+                                                <div v-for="comments in post.Comment">
+                                                    <div v-for=" lists in comments">
+                                                        <a href="#"> {{lists.userEmail}}</a> : {{lists.Comments}}
+                                                    </div>
 
+                                                </div>
                                             </div>
+                                            <input type="text" id="comment" v-model="comment" placeholder="comments"/>
+                                            <button v-on:click="addComment(comment.value,post._id,post.CommentCount)" ><span><font-awesome-icon icon="caret-right"></font-awesome-icon></span></button>
                                         </div>
-                                                <input type="text" id="comment" v-model="comment" placeholder="comments"/>
-                                                <button v-on:click="addComment(post._id,post.CommentCount)" ><span><font-awesome-icon icon="caret-right"></font-awesome-icon></span></button>
-                                            </div>
-                                            <!--<b-btn v-b-toggle.collapse1_inner size="sm">Toggle Inner Collapse</b-btn>-->
-                                    <!--<b-collapse id=collapse1_inner class="mt-2">-->
+                                        <!--<b-btn v-b-toggle.collapse1_inner size="sm">Toggle Inner Collapse</b-btn>-->
+                                        <!--<b-collapse id=collapse1_inner class="mt-2">-->
                                         <!--<b-card>Hello!</b-card>-->
-                                    <!--</b-collapse>-->
-                                </b-card>
-                            </b-collapse>
-                        </div>
-                    </b-card>
+                                        <!--</b-collapse>-->
+                                    </b-card>
+                                </b-collapse>
+                            </div>
+                        </b-card>
+                    </div>
                 </div>
-            </div>
 
 
             </div>
@@ -129,6 +129,7 @@
     import {Post} from "../api/collection";
 
 
+
     Vue.use(VueMeteorTracker);
     Vue.use(BootstrapVue);
     export default {
@@ -145,14 +146,21 @@
         },
         meteor: {
             $subscribe: {
-                'users': [],
-                'all': []
+                'userData': [],
+                'posts':[]
             },
-            users: function () {
-               return Meteor.users.find(Meteor.userId());
+            userData: function () {
+                 Meteor.subscribe('userData');
+               return Meteor.users.find({id:this.userId}).fetch();
+
             },
-            all: function(){
-                return Post.find({}).fetch();
+            // users: function () {
+            //
+            //     console.log('Users', Meteor.subscribe('userData'));
+            //
+            // },
+            posts: function(){
+                return Post.find({}).fetch()
             }
         },
         methods: {
@@ -160,27 +168,26 @@
             logout: function() {
                 if(Meteor.userId()) {
                     Meteor.logout(() => {
+
                         this.$router.push('/');
                     });
 
                 }
             },
-
             savePost: function(e){
                 let user=Meteor.users.findOne({_id: Meteor.userId()});
 
                 Meteor.call('savePost',this.$refs.content.value,user.emails[0].address);
-                  e.preventDefault();
-        },
+                e.preventDefault();
+            },
             incrementLike: function (id,like) {
-                console.log(like);
                 Meteor.call('incrementLike',id,like);
             },
             addComment: function (id,count) {
                 let user=Meteor.users.findOne({_id: Meteor.userId()});
                 let userEmail=user.emails[0].address;
-             
-                Meteor.call('addComment',id,userEmail,count,this.comment);
+
+                Meteor.call('addComment',id,userEmail,count);
             },
             userprofileLoad: function () {
                 this.$router.push('/userprofile');
@@ -188,6 +195,7 @@
             allPostLoad: function () {
                 this.$router.push('/simple');
             }
+
 
         }
     }

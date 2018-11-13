@@ -3,6 +3,7 @@ import { RouterFactory, nativeScrollBehavior } from 'meteor/akryum:vue-router2';
 import Home from '../ui/home.vue';
 import Simple from '../ui/simple';
 import Register from '../ui/register';
+import UserProfile from '../ui/userprofile';
 
 
 // Create router instance
@@ -29,7 +30,13 @@ RouterFactory.configure(factory => {
             path: '/register',
             name: 'register',
             component: Register
-      }
+        },
+        {
+            path: '/userprofile',
+            name: 'userprofile',
+            component: UserProfile
+
+        },
     ]);
 });
 
