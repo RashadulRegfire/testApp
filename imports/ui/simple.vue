@@ -12,39 +12,24 @@
                 <div class="fr" style="margin-top: 25px;margin-right:5%">
 
 
-
+                    <div v-for="email in users" >
                     <b-tabs  pills horizontal>
                         <b-dropdown variant="link" size="lg" class="pointer hover-bg-transparent" right no-caret>  <span slot="text"> <font-awesome-icon icon="user-circle" ></font-awesome-icon></span>
 
                             <b-dropdown-item href="#">Signed in as
-                                <div v-for="email in users" >
+                                <!--<div v-for="email in users" >-->
+                                <div>
                                     <strong>{{email.emails[0].address}}
                                     </strong>
                                 </div>
                             </b-dropdown-item>
                             <b-dropdown-divider></b-dropdown-divider>
                             <b-dropdown-item v-on:click="allPostLoad">All Post</b-dropdown-item>
-                            <b-dropdown-item v-on:click="userprofileLoad">Your Profile</b-dropdown-item>
+                            <b-dropdown-item v-on:click="userprofileLoad(email.emails[0].address)">Your Profile</b-dropdown-item>
                             <b-dropdown-item href="#"><a  style="" v-on:click="logout">Log Out</a></b-dropdown-item>
                         </b-dropdown>
-
-
-
-
-
-
-
-
-
-
-
-
-
                     </b-tabs>
-
-
-
-
+                    </div>
                 </div>
             </div>
         </div>
@@ -70,7 +55,7 @@
                             img-fluid
                             img-alt="image"
                             img-top>
-                        <a href="#">
+                        <a href="" v-on:click="routeToUser(post.userEmail)">
                            {{post.userEmail}}
                         </a>
                         <p class="card-text">
@@ -87,12 +72,12 @@
                                         <!--</div></label>-->
                                         <div class="row">
                                             <div v-for="email in users" style="padding-right: 4em">
-                                                <strong><a href="#">{{email.emails[0].address}}</a>
+                                                <strong><a href="" v-on:click="routeToUser(email.emails[0].address)">{{email.emails[0].address}}</a>
                                                 </strong>
                                             </div>
                                             <div v-for="comments in post.Comment">
                                                 <div v-for=" lists in comments">
-                                                    <a href="#"> {{lists.userEmail}}</a> : {{lists.Comments}}
+                                                    <a  href="" v-on:click="routeToUser(lists.userEmail)"> {{lists.userEmail}}</a> : {{lists.Comments}}
                                                 </div>
 
                                             </div>
@@ -147,6 +132,7 @@
             $subscribe: {
                 'users': [],
                 'all': []
+
             },
             users: function () {
                return Meteor.users.find(Meteor.userId());
@@ -173,22 +159,24 @@
                   e.preventDefault();
         },
             incrementLike: function (id,like) {
-                console.log(like);
+
                 Meteor.call('incrementLike',id,like);
             },
             addComment: function (id,count) {
                 let user=Meteor.users.findOne({_id: Meteor.userId()});
                 let userEmail=user.emails[0].address;
-             
+
                 Meteor.call('addComment',id,userEmail,count,this.comment);
             },
-            userprofileLoad: function () {
-                this.$router.push('/userprofile');
+            userprofileLoad: function (email) {
+                this.$router.push({name: 'userprofile/email', params:{email:email}});
             },
             allPostLoad: function () {
                 this.$router.push('/simple');
+            },
+            routeToUser: function(email){
+             this.$router.push({name: 'userprofile/email', params:{email:email}});
             }
-
         }
     }
 

@@ -24,7 +24,7 @@
                             </b-dropdown-item>
                             <b-dropdown-divider></b-dropdown-divider>
                             <b-dropdown-item v-on:click="allPostLoad">All Post</b-dropdown-item>
-                            <b-dropdown-item v-on:click="userprofileLoad">Your Profile</b-dropdown-item>
+                            <b-dropdown-item v-on:click="userprofileLoad(email.emails[0].address)">Your Profile</b-dropdown-item>
                             <b-dropdown-item href="#"><a  style="" v-on:click="logout">Log Out</a></b-dropdown-item>
                         </b-dropdown>
 
@@ -70,7 +70,7 @@
                                 img-fluid
                                 img-alt="image"
                                 img-top>
-                            <a href="#">
+                            <a href="" @click="routeToUser(email.emails[0].address)">
                                 {{post.userEmail}}
                             </a>
                             <p class="card-text">
@@ -87,12 +87,12 @@
                                             <!--</div></label>-->
                                             <div class="row">
                                                 <div v-for="email in userData" style="padding-right: 4em">
-                                                    <strong><a href="#">{{email.emails[0].address}}</a>
+                                                    <strong><a href="" v-on:click="routeToUser(email.emails[0].address)">{{email.emails[0].address}}</a>
                                                     </strong>
                                                 </div>
                                                 <div v-for="comments in post.Comment">
                                                     <div v-for=" lists in comments">
-                                                        <a href="#"> {{lists.userEmail}}</a> : {{lists.Comments}}
+                                                        <a  href="" v-on:click="routeToUser(lists.userEmail)"> {{lists.userEmail}}</a> : {{lists.Comments}}
                                                     </div>
 
                                                 </div>
@@ -150,6 +150,7 @@
                 'posts':[]
             },
             userData: function () {
+
                  Meteor.subscribe('userData');
                return Meteor.users.find({id:this.userId}).fetch();
 
@@ -160,7 +161,13 @@
             //
             // },
             posts: function(){
-                return Post.find({}).fetch()
+                if(this.$route.params.email){
+                    return Post.find({ userEmail:this.$route.params.email}).fetch();
+                }
+                else{
+                    return Post.find({}).fetch();
+                }
+
             }
         },
         methods: {
@@ -194,7 +201,12 @@
             },
             allPostLoad: function () {
                 this.$router.push('/simple');
+            },
+            routeToUser: function(email){
+                this.$router.push({name: 'userprofile/email', params:{email:email}});
+
             }
+
 
 
         }

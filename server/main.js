@@ -14,13 +14,11 @@ Meteor.startup(()=>{
 
     });
     Meteor.publish('posts', function(){
-
-        let user= Meteor.users.findOne({_id: this.userId});
-        let email=user.emails[0].address;
-        return Post.find({userEmail: email});
+        return Post.find({});
 
 
     });
+
     Meteor.publish('all', function(){
 
         return Post.find();
@@ -45,12 +43,11 @@ Meteor.startup(()=>{
             Post.update({_id: id}, {$set:{ "Like": like+1}});
         },
         addComment(id,userEmail,count,comment){
-
-            console.log(comment);
-
             Post.update({_id: id}, {$push:{'Comment.List':{userEmail:userEmail,Comments:comment} },$set:{CommentCount: count+1}});
+        },
+        routeToUser: function(email){
+            return Post.find({userEmail:email}).fetch();
         }
     })
-
 
 })

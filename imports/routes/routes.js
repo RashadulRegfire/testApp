@@ -37,6 +37,12 @@ RouterFactory.configure(factory => {
             component: UserProfile
 
         },
+        {
+            path: '/userprofile/:email',
+            name: 'userprofile/email',
+            component: UserProfile,
+            props: true
+        },
     ]);
 });
 
