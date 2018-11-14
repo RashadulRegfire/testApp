@@ -38,8 +38,8 @@ RouterFactory.configure(factory => {
 
         },
         {
-            path: '/userprofile/:email',
-            name: 'userprofile/email',
+            path: '/userprofile/:id',
+            name: 'userprofile/id',
             component: UserProfile,
             props: true
         },

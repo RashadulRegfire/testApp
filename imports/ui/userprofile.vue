@@ -1,4 +1,4 @@
-<template>
+<template name="post">
 
     <div class="container flex-auto">
         <div id="navbarTop" class="form-horizontal form-group" style="margin-top: 10%">
@@ -12,39 +12,27 @@
                 <div class="fr" style="margin-top: 25px;margin-right:5%">
 
 
+                    <div v-for="email in postsByUser.user" >
 
-                    <b-tabs  pills horizontal>
-                        <b-dropdown variant="link" size="lg" class="pointer hover-bg-transparent" right no-caret>  <span slot="text"> <font-awesome-icon icon="user-circle" ></font-awesome-icon></span>
+                        <div v-if="loginuserId==email._id">
+                            <b-tabs  pills horizontal>
+                                <b-dropdown variant="link" size="lg" class="pointer hover-bg-transparent" right no-caret>  <span slot="text"> <font-awesome-icon icon="user-circle" ></font-awesome-icon></span>
 
-                            <b-dropdown-item href="#">Signed in as
-                                <div v-for="email in userData" >
-                                    <strong>{{email.emails[0].address}}
-                                    </strong>
-                                </div>
-                            </b-dropdown-item>
-                            <b-dropdown-divider></b-dropdown-divider>
-                            <b-dropdown-item v-on:click="allPostLoad">All Post</b-dropdown-item>
-                            <b-dropdown-item v-on:click="userprofileLoad(email.emails[0].address)">Your Profile</b-dropdown-item>
-                            <b-dropdown-item href="#"><a  style="" v-on:click="logout">Log Out</a></b-dropdown-item>
-                        </b-dropdown>
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    </b-tabs>
-
-
-
-
+                                    <b-dropdown-item href="#">Signed in as
+                                        <!--<div v-for="email in users" >-->
+                                        <div>
+                                            <strong>{{email.emails[0].address}}
+                                            </strong>
+                                        </div>
+                                    </b-dropdown-item>
+                                    <b-dropdown-divider></b-dropdown-divider>
+                                    <b-dropdown-item v-on:click="allPostLoad">All Post</b-dropdown-item>
+                                    <b-dropdown-item v-on:click="userprofileLoad(email._id)">Your Profile</b-dropdown-item>
+                                    <b-dropdown-item href="#"><a  style="" v-on:click="logout">Log Out</a></b-dropdown-item>
+                                </b-dropdown>
+                            </b-tabs>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,41 +52,47 @@
                 </div>
             </div>
             <div class="row">
-                <div v-for=" post in posts">
-                    <div class="col-lg-4 col-md-6" style="min-width: 320px">
+                <div v-for=" posts in postsByUser.post">
+                    <div class="col-lg-4 col-md-6 ma2 pa2" style="min-width: 380px;">
                         <b-card img-src="https://picsum.photos/400/200/?image=41"
                                 img-fluid
                                 img-alt="image"
                                 img-top>
-                            <a href="" @click="routeToUser(email.emails[0].address)">
-                                {{post.userEmail}}
-                            </a>
+                            <div v-for="email in postsByUser.user" >
+                                <div v-if="posts.userId== email._id">
+                                    <a  href="" v-on:click="routeToUser(comments.userEmail)"> {{email.emails[0].address}}</a>
+                                </div>
+                            </div>
                             <p class="card-text">
-                                {{post.status}}
+                                {{posts.status}}
                             </p>
                             <div slot="footer">
-                                <small class="text-muted"><div class="row"><div class="col-md-5"><b-btn  size="sm" v-on:click="incrementLike(post._id,post.Like)"><font-awesome-icon icon="heart"></font-awesome-icon> </b-btn> {{post.Like}} Like</div><div class="col-md-7"><b-btn v-b-toggle="post._id" variant="" size="sm"><font-awesome-icon icon="comments"></font-awesome-icon></b-btn> {{post.CommentCount}} Comments</div></div></small>
-                                <b-collapse v-bind:id="post._id" class="mt-2">
+                                <small class="text-muted"><div class="row"><div class="col-md-5"><b-btn  size="sm" v-on:click="incrementLike(posts._id,posts.Like)"><font-awesome-icon icon="heart"></font-awesome-icon> </b-btn> {{posts.Like}} Like</div><div class="col-md-7"><b-btn v-b-toggle="posts._id" variant="" size="sm"><font-awesome-icon icon="comments"></font-awesome-icon></b-btn> {{posts.CommentCount}} Comments</div></div></small>
+                                <b-collapse v-bind:id="posts._id" class="mt-2">
                                     <b-card class="ma0 pa0">
                                         <div class="card-text form-group">
                                             <!--<label> <div v-for="email in users" >-->
                                             <!--<strong><a href="#">{{email.emails[0].address}}</a>-->
                                             <!--</strong>-->
                                             <!--</div></label>-->
-                                            <div class="row">
-                                                <div v-for="email in userData" style="padding-right: 4em">
-                                                    <strong><a href="" v-on:click="routeToUser(email.emails[0].address)">{{email.emails[0].address}}</a>
-                                                    </strong>
-                                                </div>
-                                                <div v-for="comments in post.Comment">
-                                                    <div v-for=" lists in comments">
-                                                        <a  href="" v-on:click="routeToUser(lists.userEmail)"> {{lists.userEmail}}</a> : {{lists.Comments}}
+                                            <div class="">
+                                                <div v-for="email in postsByUser.user" >
+                                                    <div v-if="loginuserId==email._id">
+                                                        <strong><a href="" v-on:click="routeToUser(email.emails[0].address)">{{email.emails[0].address}}</a>
+                                                        </strong>
                                                     </div>
+                                                </div>
+                                                <br/>
+                                                <div v-for="comments in postsByUser.comment">
+                                                    <div v-if="comments.postId== posts._id">
+                                                        <a  href="" v-on:click="routeToUser(comments.userEmail)"> {{comments.userEmail}}</a> : {{comments.Comment}}
 
+                                                        <br/>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <input type="text" id="comment" v-model="comment" placeholder="comments"/>
-                                            <button v-on:click="addComment(comment.value,post._id,post.CommentCount)" ><span><font-awesome-icon icon="caret-right"></font-awesome-icon></span></button>
+                                            <button v-on:click="addComment(posts._id)" ><span><font-awesome-icon icon="caret-right"></font-awesome-icon></span></button>
                                         </div>
                                         <!--<b-btn v-b-toggle.collapse1_inner size="sm">Toggle Inner Collapse</b-btn>-->
                                         <!--<b-collapse id=collapse1_inner class="mt-2">-->
@@ -126,12 +120,17 @@
     import 'bootstrap-vue/dist/bootstrap-vue.css';
     import BootstrapVue from 'bootstrap-vue';
     import VueMeteorTracker from 'vue-meteor-tracker';
-    import {Post} from "../api/collection";
+    import {Post} from "../api/posts";
+    import {Comments} from "../api/comments";
+
 
 
 
     Vue.use(VueMeteorTracker);
     Vue.use(BootstrapVue);
+
+
+
     export default {
         data() {
 
@@ -140,76 +139,81 @@
                 password: '',
                 errors: [],
                 status: '',
-                comment: []
-
+                comment: "",
+                loginuserId: Meteor.userId()
             }
         },
         meteor: {
             $subscribe: {
                 'userData': [],
-                'posts':[]
-            },
-            userData: function () {
-
-                 Meteor.subscribe('userData');
-               return Meteor.users.find({id:this.userId}).fetch();
+              // 'postsByUser': []
 
             },
             // users: function () {
-            //
-            //     console.log('Users', Meteor.subscribe('userData'));
-            //
+            //    return Meteor.users.find(Meteor.userId());
             // },
-            posts: function(){
-                if(this.$route.params.email){
-                    return Post.find({ userEmail:this.$route.params.email}).fetch();
-                }
-                else{
-                    return Post.find({}).fetch();
-                }
+            postsByUser: function(){
 
-            }
+               let id=this.$route.params.id;
+               Meteor.subscribe('postsByUser',id);
+                console.log(Post.find({userId:id}).fetch());
+                let tree = {
+
+                    post: Post.find({userId:id}).fetch(),
+                    user: Meteor.users.find({_id: id}).fetch(),
+                    comment: Comments.find({}).fetch()
+                };
+
+                // console.log(Post.find({}).fetch());
+                // console.log(Meteor.users.find().fetch());
+                return tree;
+            },
+            // userData: function () {
+            //
+            //     Meteor.subscribe('userData');
+            //     if(this.$route.params.id){
+            //         return Meteor.users.find({id:this.$route.params.id}).fetch();
+            //     }
+            //     return Meteor.users.find({id:this.userId}).fetch();
+            // },
+
         },
         methods: {
 
             logout: function() {
                 if(Meteor.userId()) {
                     Meteor.logout(() => {
-
                         this.$router.push('/');
                     });
 
                 }
             },
-            savePost: function(e){
-                let user=Meteor.users.findOne({_id: Meteor.userId()});
 
-                Meteor.call('savePost',this.$refs.content.value,user.emails[0].address);
+            savePost: function(e){
+                Meteor.call('savePost',this.$refs.content.value,Meteor.userId());
                 e.preventDefault();
             },
             incrementLike: function (id,like) {
+
                 Meteor.call('incrementLike',id,like);
             },
-            addComment: function (id,count) {
+            addComment: function (postId) {
                 let user=Meteor.users.findOne({_id: Meteor.userId()});
                 let userEmail=user.emails[0].address;
 
-                Meteor.call('addComment',id,userEmail,count);
+                Meteor.call('addComment',postId,userEmail,this.comment);
             },
-            userprofileLoad: function () {
-                this.$router.push('/userprofile');
+            userprofileLoad: function (id) {
+                this.$router.push({name: 'userprofile/id', params:{id:id}});
             },
             allPostLoad: function () {
                 this.$router.push('/simple');
             },
-            routeToUser: function(email){
-                this.$router.push({name: 'userprofile/email', params:{email:email}});
-
+            routeToUser: function(id){
+                this.$router.push({name: 'userprofile/id', params:{id:id}});
             }
+        },
 
-
-
-        }
     }
 
 

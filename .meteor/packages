@@ -21,3 +21,5 @@ static-html
 akryum:vue-component
 accounts-password
 akryum:vue-router2
+reywood:publish-composite
+dburles:collection-helpers

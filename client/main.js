@@ -24,6 +24,7 @@ import AppLayout from '../imports/ui/appLayout';
 Meteor.startup(() => {
     // Start the router
     const router = routerFactory.create();
+
     new Vue({
         el: '#test',
         router,

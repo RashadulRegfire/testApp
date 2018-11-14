@@ -1,39 +1,150 @@
 import {Meteor} from 'meteor/meteor';
 import '../imports/api/users';
 
-import {Post} from "../imports/api/collection";
+import {Post} from "../imports/api/posts";
+import {Comments} from '../imports/api/comments';
+import { publishComposite } from "meteor/reywood:publish-composite";
 
+
+// publishComposite('post', function(){
+//     return{
+//         find(){
+//             return Post.find();
+//         },
+//         children: [
+//             {
+//                 find(post){
+//                     console.log(Meteor.users.find({
+//                         _id : post.userId
+//                     }).fetch());
+//
+//                     return Meteor.users.find({
+//                         _id : post.userId
+//                     });
+//                 }
+//             },
+//             {
+//                 find(post){
+//                     console.log(Comments.find({
+//                         postId: post._id
+//                     }).fetch());
+//                     return Comments.find({
+//                         postId: post._id
+//                     });
+//                 },
+//                 children: [
+//                     {
+//                         find(comment,post){
+//                             console.log(Meteor.users.find({
+//                                 _id:comment.userId
+//                             }));
+//
+//                             return Meteor.users.find({
+//                                 _id:comment.userId
+//                             })
+//                         }
+//                     }
+//                 ]
+//             }
+//         ]
+//     }
+//
+// });
 
 Meteor.startup(()=>{
-    Meteor.publish('userData', function(){
-       // alert(this.userId);
 
 
-        return Meteor.users.find({_id: this.userId})
+    Meteor.publishComposite("post", {
+        find: function() {
+            return Post.find({}, {
+                sort: { createdAt: -1 },
+                limit: 10
+            });
+        },
+        children: [
+            {
+                find: function(post) {
+                    return Meteor.users.find({ _id: post.userId });
+                }
+            },
+            {
+                find: function(post) {
 
-
+                    return Comments.find(
+                        { postId: post._id })
+                },
+                children: [
+                    {
+                        find: function(comment, post) {
+                            return Meteor.users.find({ _id: comment.userId });
+                        }
+                    }
+                ]
+            }
+        ]
     });
-    Meteor.publish('posts', function(){
-        return Post.find({});
 
+    Meteor.publishComposite('postsByUser', function(userId) {
+        return {
+            find() {
+                // Find posts made by user. Note arguments for callback function
+                // being used in query.
+                return Post.find({ userId: userId });
+            },
+        children: [
+            {
+                find: function(post) {
+                    return Meteor.users.find({ _id: post.userId });
+                }
+            },
+            {
+                find: function(post) {
 
+                    return Comments.find(
+                        { postId: post._id })
+                },
+                children: [
+                    {
+                        find: function(comment, post) {
+                            return Meteor.users.find({ _id: comment.userId });
+                        }
+                    }
+                ]
+            }
+        ]
+    }
     });
 
-    Meteor.publish('all', function(){
-
-        return Post.find();
 
 
-    });
+    // Meteor.publish('userData', function(){
+    //    // alert(this.userId);
+    //
+    //
+    //     return Meteor.users.find({_id: this.userId})
+    //
+    //
+    // });
+    // Meteor.publish('posts', function(){
+    //     return Post.find({});
+    //
+    //
+    // });
+    //
+    // Meteor.publish('all', function(){
+    //
+    //     return Post.find();
+    //
+    //
+    // });
 
     Meteor.methods({
-        savePost(status,userEmail){
+        savePost(status,id){
 
             Post.insert({
-                userEmail: userEmail,
+                userId: id,
                 status: status,
                 Like: 0,
-                Comment: {},
                 CommentCount: 0,
                 date: new Date()
             })
@@ -42,11 +153,21 @@ Meteor.startup(()=>{
 
             Post.update({_id: id}, {$set:{ "Like": like+1}});
         },
-        addComment(id,userEmail,count,comment){
-            Post.update({_id: id}, {$push:{'Comment.List':{userEmail:userEmail,Comments:comment} },$set:{CommentCount: count+1}});
+        addComment(id,userEmail,comment){
+
+            Comments.insert({
+               postId: id,
+               userId: this.userId,
+                userEmail: userEmail,
+                Comment: comment,
+
+            });
+            Post.update({_id: id}, {$inc:{ CommentCount: 1}});
+
+
         },
-        routeToUser: function(email){
-            return Post.find({userEmail:email}).fetch();
+        routeToUser: function(id){
+            return Post.find({userId:id}).fetch();
         }
     })
 
