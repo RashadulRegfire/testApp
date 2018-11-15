@@ -40,7 +40,11 @@
             <div class="row">
                 <div class="tweet-body center">
                     <form method="post" enctype="multipart/form-data">
+                        <p style="color: red;font-size: medium">{{this.errors}}</p>
                         <div class="row">
+
+
+
                             <textarea class="status" ref="content" name="status" placeholder="Write your post here!" rows="5" cols="50"></textarea>
                         </div>
                         <div class="row" style="float: right; margin-right: 31%">
@@ -60,7 +64,7 @@
                                 img-top>
                             <div v-for="email in postsByUser.user" >
                                 <div v-if="posts.userId== email._id">
-                                    <a  href="" v-on:click="routeToUser(comments.userEmail)"> {{email.emails[0].address}}</a>
+                                    <a  href="" v-on:click="routeToUser(email._id)"> {{email.emails[0].address}}</a>
                                 </div>
                             </div>
                             <p class="card-text">
@@ -78,14 +82,14 @@
                                             <div class="">
                                                 <div v-for="email in postsByUser.user" >
                                                     <div v-if="loginuserId==email._id">
-                                                        <strong><a href="" v-on:click="routeToUser(email.emails[0].address)">{{email.emails[0].address}}</a>
+                                                        <strong><a href="" v-on:click="routeToUser(email._id)">{{email.emails[0].address}}</a>
                                                         </strong>
                                                     </div>
                                                 </div>
                                                 <br/>
                                                 <div v-for="comments in postsByUser.comment">
                                                     <div v-if="comments.postId== posts._id">
-                                                        <a  href="" v-on:click="routeToUser(comments.userEmail)"> {{comments.userEmail}}</a> : {{comments.Comment}}
+                                                        <a  href="" v-on:click="routeToUser(comments.userId)"> {{comments.userEmail}}</a> : {{comments.Comment}}
 
                                                         <br/>
                                                     </div>
@@ -107,6 +111,9 @@
 
 
             </div>
+
+
+
         </div>
 
     </div>
@@ -122,6 +129,9 @@
     import VueMeteorTracker from 'vue-meteor-tracker';
     import {Post} from "../api/posts";
     import {Comments} from "../api/comments";
+    import SimpleSchema from 'simpl-schema';
+
+
 
 
 
@@ -137,7 +147,8 @@
             return {
                 email: [],
                 password: '',
-                errors: [],
+                errors: "",
+                limit:4,
                 status: '',
                 comment: "",
                 loginuserId: Meteor.userId()
@@ -145,27 +156,20 @@
         },
         meteor: {
             $subscribe: {
-                'userData': [],
-              // 'postsByUser': []
-
+                'userData': []
             },
-            // users: function () {
-            //    return Meteor.users.find(Meteor.userId());
-            // },
+
             postsByUser: function(){
 
                let id=this.$route.params.id;
-               Meteor.subscribe('postsByUser',id);
-                console.log(Post.find({userId:id}).fetch());
-                let tree = {
 
+               Meteor.subscribe('postsByUser',id);
+
+                let tree = {
                     post: Post.find({userId:id}).fetch(),
                     user: Meteor.users.find({_id: id}).fetch(),
                     comment: Comments.find({}).fetch()
                 };
-
-                // console.log(Post.find({}).fetch());
-                // console.log(Meteor.users.find().fetch());
                 return tree;
             },
             // userData: function () {
@@ -179,7 +183,6 @@
 
         },
         methods: {
-
             logout: function() {
                 if(Meteor.userId()) {
                     Meteor.logout(() => {
@@ -190,7 +193,15 @@
             },
 
             savePost: function(e){
-                Meteor.call('savePost',this.$refs.content.value,Meteor.userId());
+               Meteor.call('savePost',this.$refs.content.value,Meteor.userId(),(err,res)=>{
+                   if(err){
+                       this.errors=(err.reason);
+                   }
+                   else{
+                       this.errors="";
+                   }
+                });
+
                 e.preventDefault();
             },
             incrementLike: function (id,like) {

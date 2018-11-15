@@ -4,84 +4,64 @@ import '../imports/api/users';
 import {Post} from "../imports/api/posts";
 import {Comments} from '../imports/api/comments';
 import { publishComposite } from "meteor/reywood:publish-composite";
+import SimpleSchema from 'simpl-schema';
 
 
-// publishComposite('post', function(){
-//     return{
-//         find(){
-//             return Post.find();
-//         },
-//         children: [
-//             {
-//                 find(post){
-//                     console.log(Meteor.users.find({
-//                         _id : post.userId
-//                     }).fetch());
-//
-//                     return Meteor.users.find({
-//                         _id : post.userId
-//                     });
-//                 }
-//             },
-//             {
-//                 find(post){
-//                     console.log(Comments.find({
-//                         postId: post._id
-//                     }).fetch());
-//                     return Comments.find({
-//                         postId: post._id
-//                     });
-//                 },
-//                 children: [
-//                     {
-//                         find(comment,post){
-//                             console.log(Meteor.users.find({
-//                                 _id:comment.userId
-//                             }));
-//
-//                             return Meteor.users.find({
-//                                 _id:comment.userId
-//                             })
-//                         }
-//                     }
-//                 ]
-//             }
-//         ]
-//     }
-//
-// });
+
+const Schemas= new SimpleSchema({
+    userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true},
+    status: {type: String, min: 5},
+
+});
+
+const loginSchema= new SimpleSchema({
+    email: {type:String, regEx: SimpleSchema.RegEx.Email, optional: false},
+    password: {type:String, regEx:SimpleSchema.RegEx.password},
+    address: {type: String, optional:true},
+    contactNo: {type: Number, regEx:SimpleSchema.RegEx.Phone,optional: true }
+});
+
+
+
+
+
+
+Post.attachSchema(Schemas);
+
+
+
 
 Meteor.startup(()=>{
 
 
-    Meteor.publishComposite("post", {
-        find: function() {
-            return Post.find({}, {
-                sort: { createdAt: -1 },
-                limit: 10
-            });
-        },
-        children: [
-            {
-                find: function(post) {
-                    return Meteor.users.find({ _id: post.userId });
-                }
+    Meteor.publishComposite('post', function(limit) {
+        return {
+            find() {
+                // Find posts made by user. Note arguments for callback function
+                // being used in query.
+                return Post.find({}, {sort: {createdAt: -1}, limit: limit});
             },
-            {
-                find: function(post) {
-
-                    return Comments.find(
-                        { postId: post._id })
-                },
-                children: [
-                    {
-                        find: function(comment, post) {
-                            return Meteor.users.find({ _id: comment.userId });
-                        }
+            children: [
+                {
+                    find: function (post) {
+                        return Meteor.users.find({_id: post.userId});
                     }
-                ]
-            }
-        ]
+                },
+                {
+                    find: function (post) {
+                        return Comments.find(
+                            {postId: post._id})
+                    },
+                    children: [
+                        {
+                            find: function (comment, post) {
+                                return Meteor.users.find({_id: comment.userId});
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
     });
 
     Meteor.publishComposite('postsByUser', function(userId) {
@@ -116,29 +96,8 @@ Meteor.startup(()=>{
     });
 
 
-
-    // Meteor.publish('userData', function(){
-    //    // alert(this.userId);
-    //
-    //
-    //     return Meteor.users.find({_id: this.userId})
-    //
-    //
-    // });
-    // Meteor.publish('posts', function(){
-    //     return Post.find({});
-    //
-    //
-    // });
-    //
-    // Meteor.publish('all', function(){
-    //
-    //     return Post.find();
-    //
-    //
-    // });
-
     Meteor.methods({
+
         savePost(status,id){
 
             Post.insert({
@@ -147,7 +106,14 @@ Meteor.startup(()=>{
                 Like: 0,
                 CommentCount: 0,
                 date: new Date()
-            })
+            }, (err,res)=>{
+               if(err){
+                  throw new Meteor.Error('404','Status should not be empty!!');
+               }
+               else{
+                   console.log(res);
+               }
+            });
         },
         incrementLike(id,like){
 

@@ -216,11 +216,8 @@
             login: function(e) {
                 let email=this.email;
                 let password=this.password;
-                alert(email);
-                alert(password);
                 Meteor.loginWithPassword({email},password,(err)=>{
                     if(err){
-                        alert(err)
                         this.$router.push('/');
                     }
                     else {
@@ -231,14 +228,10 @@
             },
             registerUser: function(e){
 
-
                let email=this.$refs.email.value;
                 let password=this.$refs.password.value;
                 // let contactNo=this.$refs.contactNo.value;
                 // let address=this.$refs.address.value;
-
-
-
                 Accounts.createUser({email,password}, (err)=> {
                     if (err) {
                         this.$router.push('/register');

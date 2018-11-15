@@ -5,6 +5,7 @@ akryum:vue-component@0.14.1
 akryum:vue-component-dev-client@0.4.3
 akryum:vue-component-dev-server@0.1.2
 akryum:vue-router2@0.2.2
+aldeed:collection2@3.0.1
 allow-deny@1.1.0
 autoupdate@1.5.0
 babel-compiler@7.2.1
@@ -44,6 +45,7 @@ launch-screen@1.1.1
 livedata@1.0.18
 localstorage@1.2.0
 logging@1.1.20
+mdg:validated-method@1.2.0
 meteor@1.9.2
 meteor-base@1.4.0
 minifier-css@1.4.1
@@ -62,6 +64,7 @@ npm-bcrypt@0.9.3
 npm-mongo@3.1.1
 ordered-dict@1.1.0
 promise@0.11.1
+raix:eventemitter@0.1.3
 random@1.1.0
 rate-limit@1.0.9
 reactive-var@1.0.11
@@ -79,6 +82,7 @@ standard-minifier-css@1.5.2
 standard-minifier-js@2.4.0
 static-html@1.2.2
 templating-tools@1.1.2
+tmeasday:check-npm-versions@0.3.2
 tracker@1.2.0
 underscore@1.0.10
 vuejs:meteor-integration@0.1.5

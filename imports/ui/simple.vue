@@ -51,7 +51,17 @@
                     </form>
                 </div>
             </div>
-            <div class="row">
+
+            <b-card>
+                <div class="row" style="float: right">
+                    <div class="col-md-2 form-group" >
+                        <b-dropdown id="ddown-aria" text="Sort-By" variant="primary" left class="m-2">
+                            <b-dropdown-item-button @click="sortByDate">Date</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="sortByEmail">E-mail</b-dropdown-item-button>
+                        </b-dropdown>
+                    </div>
+                </div>
+            <div class="row" style="margin-top: 10%">
             <div v-for=" posts in post.post">
                 <div class="col-lg-4 col-md-6 ma2 pa2" style="min-width: 380px;">
                     <b-card img-src="https://picsum.photos/400/200/?image=41"
@@ -60,7 +70,7 @@
                             img-top>
                         <div v-for="email in post.user" >
                         <div v-if="posts.userId== email._id">
-                            <a  href="" v-on:click="routeToUser(comments.userEmail)"> {{email.emails[0].address}}</a>
+                            <a  href="" v-on:click="routeToUser(email._id)"> {{email.emails[0].address}}</a>
                         </div>
                         </div>
                         <p class="card-text">
@@ -78,14 +88,14 @@
                                         <div class="">
                                             <div v-for="email in post.user" >
                                                 <div v-if="loginuserId==email._id">
-                                                <strong><a href="" v-on:click="routeToUser(email.emails[0].address)">{{email.emails[0].address}}</a>
+                                                <strong><a href="" v-on:click="routeToUser(email._id)">{{email.emails[0].address}}</a>
                                                 </strong>
                                                 </div>
                                             </div>
                                             <br/>
                                             <div v-for="comments in post.comment">
                                                 <div v-if="comments.postId== posts._id">
-                                                    <a  href="" v-on:click="routeToUser(comments.userEmail)"> {{comments.userEmail}}</a> : {{comments.Comment}}
+                                                    <a  href="" v-on:click="routeToUser(comments.userId)"> {{comments.userEmail}}</a> : {{comments.Comment}}
 
                                                     <br/>
                                                 </div>
@@ -104,10 +114,11 @@
                     </b-card>
                 </div>
             </div>
-
-
             </div>
+            </b-card>
+
         </div>
+        <a href="" v-on:click="changeLimit"> Show More</a>
 
     </div>
 
@@ -124,8 +135,6 @@
     import {Comments} from "../api/comments";
 
 
-
-
     Vue.use(VueMeteorTracker);
     Vue.use(BootstrapVue);
 
@@ -140,45 +149,46 @@
                 errors: [],
                 status: '',
                 comment: "",
+                limit: 3,
+                count: 0,
                 loginuserId: Meteor.userId()
             }
         },
         meteor: {
             $subscribe: {
-               'userData': [],
-                'post': []
-
+                'userData': [],
+                'post': [],
             },
             // users: function () {
             //    return Meteor.users.find(Meteor.userId());
             // },
-            post: function(){
+            post: function () {
 
                 let tree = {
 
-                     post: Post.find({}).fetch(),
+                    post: Post.find({}).fetch(),
                     user: Meteor.users.find({}).fetch(),
                     comment: Comments.find({}).fetch()
-                    };
+                };
 
-               // console.log(Post.find({}).fetch());
-               // console.log(Meteor.users.find().fetch());
-               return tree;
+                // console.log(Post.find({}).fetch());
+                // console.log(Meteor.users.find().fetch());
+                return tree;
             },
             userData: function () {
 
                 Meteor.subscribe('userData');
-                if(this.$route.params.id){
-                    return Meteor.users.find({id:this.$route.params.id}).fetch();
+                if (this.$route.params.id) {
+                    return Meteor.users.find({id: this.$route.params.id}).fetch();
                 }
-              //  return Meteor.users.find({id:this.userId}).fetch();
+                //  return Meteor.users.find({id:this.userId}).fetch();
             },
 
         },
         methods: {
 
-            logout: function() {
-                if(Meteor.userId()) {
+            logout: function () {
+                if (Meteor.userId()) {
                     Meteor.logout(() => {
                         this.$router.push('/');
                     });
@@ -186,33 +196,69 @@
                 }
             },
 
-            savePost: function(e){
-                Meteor.call('savePost',this.$refs.content.value,Meteor.userId());
-                  e.preventDefault();
-        },
-            incrementLike: function (id,like) {
+            savePost: function (e) {
+                Meteor.call('savePost', this.$refs.content.value, Meteor.userId());
+                e.preventDefault();
+            },
+            incrementLike: function (id, like) {
 
-                Meteor.call('incrementLike',id,like);
+                Meteor.call('incrementLike', id, like);
             },
             addComment: function (postId) {
-                let user=Meteor.users.findOne({_id: Meteor.userId()});
-                let userEmail=user.emails[0].address;
+                let user = Meteor.users.findOne({_id: Meteor.userId()});
+                let userEmail = user.emails[0].address;
 
-                Meteor.call('addComment',postId,userEmail,this.comment);
+                Meteor.call('addComment', postId, userEmail, this.comment);
             },
             userprofileLoad: function (id) {
-                this.$router.push({name: 'userprofile/id', params:{id:id}});
+                this.$router.push({name: 'userprofile/id', params: {id: id}});
             },
             allPostLoad: function () {
                 this.$router.push('/simple');
             },
-            routeToUser: function(id){
-             this.$router.push({name: 'userprofile/id', params:{id:id}});
+            routeToUser: function (id) {
+
+                this.$router.push({name: 'userprofile/id', params: {id: id}});
+            },
+            changeLimit(e) {
+                this.limit+=3;
+                this.$subscribe('post', [this.limit]);
+                e.preventDefault();
+            },
+            sortByDate(){
+               // console.log(Post.find({},{sort: {date:-1}}).fetch());
+               this.post.post= Post.find({},{sort: {date:-1}}).fetch();
+
+            },
+            sortByEmail(){
+              //  console.log(Meteor.users.find({},{sort: {'emails.address': -1 }}).fetch());
+                this.post.user= Meteor.users.find({},{sort:{'emails.address': -1 }}).fetch();
+                let sortedPost='';
+                this.post.user.forEach((user)=>{
+                    console.log(Post.find({ userId: user._id }).fetch());
+
+                    sortedPost=(Post.find({ userId: user._id }).fetch());
+                });
+                this.post.post=sortedPost;
+               // return this.post.post;
+               // this.post.post=Post.find({ userId: this.post.user._id }).fetch();
             }
+
+
+
         },
+        mounted () {
 
+
+          //  alert(this.$router.props.limit);
+            // Subscribes to the 'threads' publication with two parameters
+          //  this.$subscribe('post', [this.limit]);
+
+        },
+        // computed: {
+        //
+        // }
     }
-
 
 </script>
 
