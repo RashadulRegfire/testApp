@@ -104,7 +104,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon4"><font-awesome-icon icon="lock" /></span>
                             </div>
-                            <input v-model="password" ref="password"type="text" class="form-control" placeholder="Password" aria-label="Pasword" aria-describedby="basic-addon1">
+                            <input v-model="password" ref="password"type="password" class="form-control" placeholder="Password" aria-label="Pasword" aria-describedby="basic-addon1">
                         </div>
 
 

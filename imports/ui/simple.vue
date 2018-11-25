@@ -53,15 +53,20 @@
             </div>
 
             <b-card>
-                <div class="row" style="float: right">
-                    <div class="col-md-2 form-group" >
-                        <b-dropdown id="ddown-aria" text="Sort-By" variant="primary" left class="m-2">
-                            <b-dropdown-item-button @click="sortByDate">Date</b-dropdown-item-button>
-                            <b-dropdown-item-button @click="sortByEmail">E-mail</b-dropdown-item-button>
+
+                <div class="row">
+                    <div class="col-md-6 " style="width: 50%;margin:auto; position: inherit; margin-right: 0%">
+                        <input  v-model="searchtext" v-on:keyup="searchPost" size="lg" class="tc"  type="text" placeholder="Search Here"/>
+                    </div>
+                    <div>
+                        <b-dropdown id="ddown-aria" style="float:right;" text="Sort-By"  variant="info" left class="m-3">
+                            <b-dropdown-item-button @click="sortByDate">By Date</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="sortByEmail">By E-mail</b-dropdown-item-button>
                         </b-dropdown>
                     </div>
                 </div>
             <div class="row" style="margin-top: 10%">
+
             <div v-for=" posts in post.post">
                 <div class="col-lg-4 col-md-6 ma2 pa2" style="min-width: 380px;">
                     <b-card img-src="https://picsum.photos/400/200/?image=41"
@@ -93,12 +98,14 @@
                                                 </div>
                                             </div>
                                             <br/>
+                                            <div v-if="post.comment">
                                             <div v-for="comments in post.comment">
                                                 <div v-if="comments.postId== posts._id">
                                                     <a  href="" v-on:click="routeToUser(comments.userId)"> {{comments.userEmail}}</a> : {{comments.Comment}}
 
                                                     <br/>
                                                 </div>
+                                            </div>
                                             </div>
                                         </div>
                                                 <input type="text" id="comment" v-model="comment" placeholder="comments"/>
@@ -114,11 +121,27 @@
                     </b-card>
                 </div>
             </div>
+
             </div>
             </b-card>
+            <div>
+                <b-pagination align="right"  :total-rows="totalPage" :per-page="1"   v-on:change="changeLimit(currentPage)" v-model="currentPage"></b-pagination>
+            <br>
 
+            <!--<div>currentPage: {{currentPage}}</div>-->
+            </div>
         </div>
-        <a href="" v-on:click="changeLimit"> Show More</a>
+
+
+        <div id="footer" >
+            <footer>
+                <b-card style="border: 0px;border-top: 2px solid;margin-top: 10%; background-color:darkcyan; color:white" >
+                    <div style="text-align: center">
+                        <p> Copyright &copy;Regfire Solutions Ltd</p>
+                    </div>
+                </b-card>
+            </footer>
+        </div>
 
     </div>
 
@@ -135,44 +158,57 @@
     import {Comments} from "../api/comments";
 
 
+
     Vue.use(VueMeteorTracker);
     Vue.use(BootstrapVue);
-
 
 
     export default {
         data() {
 
             return {
-                email: [],
+                email: "",
                 password: '',
                 errors: [],
                 status: '',
                 comment: "",
-                limit: 3,
+                limit: 2,
                 count: 0,
-                loginuserId: Meteor.userId()
+                loginuserId: Meteor.userId(),
+                searchtext:'',
+                currentPage: 1,
+                totalPage: 0
+
+
             }
         },
         meteor: {
             $subscribe: {
                 'userData': [],
-                'post': [],
+                'all': [],
+               'post': [this.limit],
             },
-            // users: function () {
-            //    return Meteor.users.find(Meteor.userId());
-            // },
+            all:  function(){
+                let page= Post.find({}).fetch().length/2;
+
+
+                if(page*2>(parseInt(page)*2)){
+                  this.totalPage=parseInt(page)+1;
+                }
+                else{
+                    this.totalPage=page;
+                }
+
+                console.log(this.totalPage);
+            },
             post: function () {
-
+                let page=this.limit*this.currentPage;
                 let tree = {
-
-                    post: Post.find({}).fetch(),
+                    post: Post.find({},{limit:page}).fetch(),
                     user: Meteor.users.find({}).fetch(),
                     comment: Comments.find({}).fetch()
                 };
 
-                // console.log(Post.find({}).fetch());
-                // console.log(Meteor.users.find().fetch());
                 return tree;
             },
             userData: function () {
@@ -221,27 +257,61 @@
                 this.$router.push({name: 'userprofile/id', params: {id: id}});
             },
             changeLimit(e) {
-                this.limit+=3;
+                console.log('Current Page',this.currentPage);
+               // this.currentPage=
+               // this.limit=this.limit+this.currentPage.value;
+               //  console.log("Change",  this.limit);
+
                 this.$subscribe('post', [this.limit]);
-                e.preventDefault();
+
             },
             sortByDate(){
-               // console.log(Post.find({},{sort: {date:-1}}).fetch());
-               this.post.post= Post.find({},{sort: {date:-1}}).fetch();
+               console.log(Post.find({},{sort: {Date:-1}}).fetch());
+               this.post.post= Post.find({},{sort: {Date: -1}}).fetch();
+
 
             },
             sortByEmail(){
-              //  console.log(Meteor.users.find({},{sort: {'emails.address': -1 }}).fetch());
-                this.post.user= Meteor.users.find({},{sort:{'emails.address': -1 }}).fetch();
-                let sortedPost='';
-                this.post.user.forEach((user)=>{
-                    console.log(Post.find({ userId: user._id }).fetch());
+                this.post.post=[],
 
-                    sortedPost=(Post.find({ userId: user._id }).fetch());
+                Meteor.users.find({ },{sort:{'emails.address': 1 }}).fetch().forEach((user)=>{
+                   Post.find({}).fetch().forEach((post)=>{
+                       if(post.userId==user._id){
+                           this.post.post.push(post);
+                       }
+                   });
                 });
-                this.post.post=sortedPost;
-               // return this.post.post;
-               // this.post.post=Post.find({ userId: this.post.user._id }).fetch();
+            },
+            searchPost(e){
+
+                console.log(this.searchtext);
+                let search=this.searchtext;
+                if(search!= ""){
+
+                    if(Post.find({$or:[{ 'status':{'$regex':search, $options: 'i'}}]}).fetch()){
+                        this.post.post=(Post.find({$or:[{ 'status':{'$regex':search, $options: 'i'}}]}).fetch());
+                    }
+
+                   // console.log(Meteor.users.find({$or:[{ 'emails.address':{'$regex':search}}]}).fetch());
+
+                    // Meteor.users.find({ $or:[{ 'emails.address':{'$regex':search}}] },{sort:{'emails.address': 1 }}).fetch().forEach((user)=>{
+                    //     Post.find({}).fetch().forEach((post)=>{
+                    //         if(post){
+                    //             if(post.userId==user._id){
+                    //
+                    //                 this.post.post=(post);
+                    //             }
+                    //         }
+                    //
+                    //     });
+                    // });
+                }
+                else{
+
+                    this.post.post=(Post.find({}).fetch());
+                }
+
+                e.preventDefault();
             }
 
 
@@ -252,7 +322,8 @@
 
           //  alert(this.$router.props.limit);
             // Subscribes to the 'threads' publication with two parameters
-          //  this.$subscribe('post', [this.limit]);
+        //  this.$subscribe('post', [this.limit]);
+         // this.$subscribe('all');
 
         },
         // computed: {

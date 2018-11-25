@@ -11,34 +11,64 @@ import SimpleSchema from 'simpl-schema';
 const Schemas= new SimpleSchema({
     userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true},
     status: {type: String, min: 5},
+    Like: {type: Number},
+    CommentCount: {type: Number},
+    Date:{type: Date}
+
 
 });
 
-const loginSchema= new SimpleSchema({
-    email: {type:String, regEx: SimpleSchema.RegEx.Email, optional: false},
-    password: {type:String, regEx:SimpleSchema.RegEx.password},
-    address: {type: String, optional:true},
-    contactNo: {type: Number, regEx:SimpleSchema.RegEx.Phone,optional: true }
-});
+// const loginSchema= new SimpleSchema({
+//     email: {type:String, regEx: SimpleSchema.RegEx.Email, optional: false},
+//     password: {type:String, regEx:SimpleSchema.RegEx.password},
+//     address: {type: String, optional:true},
+//     contactNo: {type: Number, regEx:SimpleSchema.RegEx.Phone,optional: true }
+// });
 
 
 
 
 
 
-Post.attachSchema(Schemas);
+
 
 
 
 
 Meteor.startup(()=>{
 
-
-    Meteor.publishComposite('post', function(limit) {
+    Meteor.publishComposite('all', function() {
         return {
             find() {
                 // Find posts made by user. Note arguments for callback function
                 // being used in query.
+                return Post.find({}, {sort: {createdAt: -1}});
+            },
+            children: [
+                {
+                    find: function (post) {
+                        return Meteor.users.find({_id: post.userId});
+                    }
+                },
+                {
+                    find: function (post) {
+                        return Comments.find(
+                            {postId: post._id})
+                    },
+                    children: [
+                        {
+                            find: function (comment, post) {
+                                return Meteor.users.find({_id: comment.userId});
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    Meteor.publishComposite('post', function(limit) {
+        return {
+            find() {
                 return Post.find({}, {sort: {createdAt: -1}, limit: limit});
             },
             children: [
@@ -67,8 +97,6 @@ Meteor.startup(()=>{
     Meteor.publishComposite('postsByUser', function(userId) {
         return {
             find() {
-                // Find posts made by user. Note arguments for callback function
-                // being used in query.
                 return Post.find({ userId: userId });
             },
         children: [
@@ -103,15 +131,12 @@ Meteor.startup(()=>{
             Post.insert({
                 userId: id,
                 status: status,
-                Like: 0,
-                CommentCount: 0,
-                date: new Date()
+                'Like': 0,
+                'CommentCount': 0,
+                'Date': new Date()
             }, (err,res)=>{
                if(err){
                   throw new Meteor.Error('404','Status should not be empty!!');
-               }
-               else{
-                   console.log(res);
                }
             });
         },
